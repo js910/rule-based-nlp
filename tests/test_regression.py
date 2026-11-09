@@ -110,12 +110,23 @@ class SentimentTests(unittest.TestCase):
 
 class CLITests(unittest.TestCase):
     def test_combined_json_output(self):
+        text = "정말 좋지 않다. 전화 (02) 123-4567, 접수 2024년 3월 15일, 비용 5,000원"
         process = subprocess.run(
-            [sys.executable, "-X", "utf8", "main.py", "--text", "정말 좋지 않다. (02) 123-4567"],
+            [sys.executable, "-X", "utf8", "main.py", "--text", text],
             cwd=ROOT, check=True, capture_output=True, encoding="utf-8",
         )
         result = json.loads(process.stdout)
-        self.assertEqual(result["information"]["phone"], ["02-123-4567"])
+        self.assertEqual(
+            result["information"],
+            {
+                "email": [],
+                "phone": ["02-123-4567"],
+                "date": ["2024-03-15"],
+                "money": [{"amount": 5000, "currency": "KRW"}],
+                "url": [],
+            },
+        )
+        self.assertIs(type(result["information"]["money"][0]["amount"]), int)
         self.assertEqual(result["sentiment"]["label"], "부정")
         self.assertEqual(result["sentiment"]["score"], -3)
 

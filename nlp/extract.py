@@ -80,6 +80,10 @@ def parse_won(value):
 
 
 def normalize(kind, match):
+    """전화는 하이픈 문자열, 날짜는 ISO 8601 문자열, 금액은 정수 amount와 통화 코드를 반환한다.
+
+    예시 결과는 02-123-4567, 2024-03-15, {"amount": 5000, "currency": "KRW"}다.
+    """
     if kind == "email":
         return f"{match['local']}@{match['domain'].lower()}"
     if kind == "phone":
