@@ -1,5 +1,7 @@
 """고정된 레이블 데이터로 평가하고 문장별 오류를 출력한다."""
 
+import argparse
+import csv
 import json
 from collections import Counter
 from pathlib import Path
@@ -14,6 +16,18 @@ LABELS = ("긍정", "부정")
 def read_data(filename):
     with (DATA / filename).open(encoding="utf-8") as source:
         return [json.loads(line) for line in source if line.strip()]
+
+
+def read_nsmc():
+    path = DATA / "ratings_test.txt"
+    if not path.exists():
+        raise SystemExit("NSMC 테스트 데이터가 필요합니다. 먼저 python setup_data.py를 실행하세요.")
+    with path.open(encoding="utf-8-sig", newline="") as source:
+        # 따옴표도 리뷰 원문이므로 CSV 인용 문법을 비활성화한다.
+        rows = csv.DictReader(source, delimiter="\t", quoting=csv.QUOTE_NONE)
+        return [{"id": row["id"], "text": row["document"],
+                 "label": "긍정" if row["label"] == "1" else "부정"}
+                for row in rows if row["document"] and row["document"].strip()]
 
 
 def as_counter(values):
@@ -62,6 +76,11 @@ def evaluate_sentiment(rows, use_rules):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--errors", type=int, default=20, help="출력할 감성 오분류 건수")
+    args = parser.parse_args()
+    if args.errors < 0:
+        parser.error("--errors는 0 이상이어야 합니다.")
     rows = read_data("extraction.jsonl")
     counts, failures = evaluate_extraction(rows)
     print(f"정보 추출 평가 ({len(rows)}문장)")
@@ -77,8 +96,9 @@ def main():
         if "note" in row:
             print(f"  {row['note']}")
 
-    rows = read_data("sentiment.jsonl")
-    print(f"\n감성 분석 평가 ({len(rows)}문장)")
+    rows = read_nsmc()
+    labels = Counter(row["label"] for row in rows)
+    print(f"\nNSMC 감성 분석 평가 ({len(rows)}문장, 긍정 {labels['긍정']}, 부정 {labels['부정']})")
     print("| 설정 | 정답 수 | Accuracy | 긍정 F1 | 부정 F1 | Macro F1 |")
     print("| --- | ---: | ---: | ---: | ---: | ---: |")
     for mode, use_rules in (("사전만", False), ("사전 + 규칙", True)):
@@ -87,12 +107,10 @@ def main():
         print(f"| {mode} | {len(rows) - len(failures)} | {accuracy:.1%} | "
               f"{f1['긍정']:.3f} | {f1['부정']:.3f} | {macro:.3f} |")
     print(f"\n규칙 적용 후 오분류 {len(failures)}건")
-    for row, result in failures:
+    for row, result in failures[:args.errors]:
         terms = ", ".join(f"{hit['term']}={hit['score']:+g}" for hit in result["hits"])
         print(f"[{row['id']}] {row['text']} · 정답 {row['label']} · "
               f"출력 {result['label']} ({terms or '매칭 없음'})")
-        if "note" in row:
-            print(f"  {row['note']}")
 
 
 if __name__ == "__main__":

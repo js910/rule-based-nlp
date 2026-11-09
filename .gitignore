@@ -14,3 +14,6 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+
+/data/SentiWord_info.json
+/data/ratings_test.txt

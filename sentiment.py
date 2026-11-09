@@ -1,6 +1,7 @@
-"""한국어 표면 토큰과 직접 구축한 사전을 이용한 감성 점수 계산."""
+"""KNU 한국어 감성사전과 도메인 특화 표현으로 감성 점수를 계산한다."""
 
 import csv
+import json
 import re
 from pathlib import Path
 
@@ -13,14 +14,14 @@ SUFFIX = re.compile(
     r"았지만|었지만|았다가|었다가|은|는|이|가|을|를|도|만|에|으로|에서|"
     r"지|지가|지는|지도|기|기가|기는|게|음|함|해|해요|해서|하다|하고|하지만|"
     r"하는|한|하지|하지는|하지도|하네요|했|했다|했어요|했고|했지만|했네요|"
-    r"합니다|이라|이라서|이고)?"
+    r"합니다|이라|이라서|이고|진|적|적이다|적이에요)?"
 )
 # '-지 않다', '-지 못하다'에서 뒷어절의 활용형을 식별한다.
 POST_NEGATION = re.compile(r"(?:않|못하|못해|못했)(?:[가-힣]*)")
 # 명시적으로 지원하는 이중부정은 '-지 않지 않다'의 활용형이다.
 DOUBLE_FIRST = {"않지", "않지는", "않지도"}
 PRE_NEGATION = {"안", "못"}
-NEGATING_END = {"지", "지가", "지는", "지도", "하지", "하지는", "하지도"}
+NEGATING_END = {"지", "지가", "지는", "지도", "진", "하지", "하지는", "하지도"}
 IRREGULAR_FORMS = {"나빠": "나쁘", "예뻐": "예쁘", "느려": "느리", "질겨": "질기",
                    "고마워": "고맙", "쉬워": "쉽", "어려워": "어렵", "아파": "아프"}
 INTENSIFIERS = {"매우": 1.5, "정말": 1.5, "아주": 1.5, "너무": 1.5,
@@ -29,9 +30,28 @@ INTENSIFIERS = {"매우": 1.5, "정말": 1.5, "아주": 1.5, "너무": 1.5,
 
 
 def load_lexicon():
-    path = Path(__file__).parent / "data" / "lexicon.csv"
-    with path.open(encoding="utf-8", newline="") as source:
-        return {row["term"]: int(row["score"]) for row in csv.DictReader(source)}
+    data = Path(__file__).parent / "data"
+    path = data / "SentiWord_info.json"
+    if not path.exists():
+        raise SystemExit("KNU 감성사전이 필요합니다. 먼저 python setup_data.py를 실행하세요.")
+    with path.open(encoding="utf-8-sig") as source:
+        entries = json.load(source)
+
+    roots = {}
+    words = {}
+    for entry in entries:
+        word, root = entry["word"], entry["word_root"]
+        score = int(entry["polarity"])
+        # 한 어절인 한글 감성 표현만 사용한다. 어근이 겹치면 표제어가 우선이다.
+        if not score or not word or any(not ("가" <= char <= "힣") for char in word):
+            continue
+        words[word] = score
+        if root and word.startswith(root) and SUFFIX.fullmatch(word[len(root):]):
+            roots.setdefault(root, score)
+    roots.update(words)
+    with (data / "domain_lexicon.csv").open(encoding="utf-8", newline="") as source:
+        roots.update({row["term"]: int(row["score"]) for row in csv.DictReader(source)})
+    return roots
 
 
 LEXICON = load_lexicon()
@@ -39,12 +59,15 @@ MAX_TERM_LENGTH = max(map(len, LEXICON))
 
 
 def lookup(token):
+    if token in INTENSIFIERS or token in PRE_NEGATION or POST_NEGATION.fullmatch(token):
+        return None
     for length in range(min(len(token), MAX_TERM_LENGTH), 0, -1):
         stem = token[:length]
         if stem in LEXICON and SUFFIX.fullmatch(token[length:]):
             return stem, token[length:]
-        if stem in IRREGULAR_FORMS and SUFFIX.fullmatch(token[length:]):
-            return IRREGULAR_FORMS[stem], token[length:]
+        irregular = IRREGULAR_FORMS.get(stem)
+        if irregular in LEXICON and SUFFIX.fullmatch(token[length:]):
+            return irregular, token[length:]
     return None
 
 
