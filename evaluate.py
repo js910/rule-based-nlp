@@ -54,11 +54,11 @@ def evaluate_extraction(rows):
     return counts, failures
 
 
-def evaluate_sentiment(rows, use_rules):
+def evaluate_sentiment(rows, use_rules, zero_label="중립"):
     confusion = Counter()
     failures = []
     for row in rows:
-        result = analyze(row["text"], use_rules=use_rules)
+        result = analyze(row["text"], use_rules=use_rules, zero_label=zero_label)
         confusion[row["label"], result["label"]] += 1
         if result["label"] != row["label"]:
             failures.append((row, result))
@@ -78,6 +78,7 @@ def evaluate_sentiment(rows, use_rules):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--errors", type=int, default=20, help="출력할 감성 오분류 건수")
+    parser.add_argument("--binary", action="store_true", help="0점을 긍정으로 판정해 이진 평가")
     args = parser.parse_args()
     if args.errors < 0:
         parser.error("--errors는 0 이상이어야 합니다.")
@@ -102,7 +103,8 @@ def main():
     print("| 설정 | 정답 수 | Accuracy | 긍정 F1 | 부정 F1 | Macro F1 |")
     print("| --- | ---: | ---: | ---: | ---: | ---: |")
     for mode, use_rules in (("사전만", False), ("사전 + 규칙", True)):
-        accuracy, f1, failures = evaluate_sentiment(rows, use_rules)
+        accuracy, f1, failures = evaluate_sentiment(
+            rows, use_rules, zero_label="긍정" if args.binary else "중립")
         macro = sum(f1.values()) / len(LABELS)
         print(f"| {mode} | {len(rows) - len(failures)} | {accuracy:.1%} | "
               f"{f1['긍정']:.3f} | {f1['부정']:.3f} | {macro:.3f} |")
