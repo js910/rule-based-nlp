@@ -3,8 +3,8 @@
 import argparse
 import json
 
-from extract import extract
-from sentiment import analyze
+from nlp.extract import extract
+from nlp.sentiment import analyze
 
 
 def main():

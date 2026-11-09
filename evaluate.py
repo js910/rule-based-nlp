@@ -6,8 +6,8 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from extract import PATTERNS, extract
-from sentiment import analyze
+from nlp.extract import PATTERNS, extract
+from nlp.sentiment import analyze
 
 DATA = Path(__file__).parent / "data"
 LABELS = ("긍정", "부정")

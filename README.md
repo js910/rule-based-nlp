@@ -1,5 +1,7 @@
 # 규칙 기반 한국어 정보 추출과 감성 분석
 
+자연어 처리(NLP, Natural Language Processing)는 사람이 쓰는 언어를 컴퓨터가 읽고 분석할 수 있도록 다루는 분야다. 문장에서 연락처를 찾거나 리뷰가 긍정인지 부정인지 판단하는 일이 여기에 해당한다.
+
 고객 문의와 리뷰에서 이메일·전화번호·날짜·금액·URL을 찾아 표준 형식으로 변환하고, KNU 감성사전과 부정·강조 규칙으로 문장의 감성을 판정한다. 출력은 추출값과 감성 점수의 근거를 담은 JSON이다.
 
 ## 빠른 실행
@@ -17,7 +19,7 @@ python -X utf8 main.py --text "정말 좋지 않다. 전화 (02) 123-4567"
 
 ## 1. 다섯 가지 정보 추출 패턴
 
-`extract.py`의 `PATTERNS`에 이메일·전화·날짜·금액·URL 정규식을 등록한다. Python 표준 라이브러리 `re`를 사용하며, 유형별 대표 변형과 출력 형식은 다음과 같다.
+`nlp/extract.py`의 `PATTERNS`에 이메일·전화·날짜·금액·URL 정규식을 등록한다. Python 표준 라이브러리 `re`를 사용하며, 유형별 대표 변형과 출력 형식은 다음과 같다.
 
 | 유형 | 지원 예 | 정규화 |
 | --- | --- | --- |
@@ -90,7 +92,6 @@ python -X utf8 evaluate.py --errors 30 | Out-File -Encoding utf8 evaluation.txt
 Python 3.10 이상이 필요하다. 외부 Python 패키지 없이 실행되며, 첫 실행 전에 공식 데이터를 내려받을 때 인터넷 연결이 필요하다. 저장소 루트에서 실행한다.
 
 ```powershell
-python -m pip install -r requirements.txt
 python setup_data.py
 python -X utf8 main.py --text "정말 좋지 않다. 문의 help@example.com, 전화 (02) 123-4567, 접수 2024년 3월 15일, 비용 5,000원, 링크 https://example.com/help"
 python -X utf8 evaluate.py
@@ -104,13 +105,13 @@ python -X utf8 evaluate.py
 
 ## 7. 모듈을 분리한 이유
 
-`main.py`는 명령줄 입력과 JSON 출력만 맡고, `extract.py`와 `sentiment.py`는 문자열을 받아 결과를 반환한다. 그래서 다른 프로그램이 CLI를 거치지 않고 각 함수를 가져다 쓸 수 있고, 회귀 테스트도 정규화와 감성 규칙을 따로 검증할 수 있다. `evaluate.py`는 같은 함수를 호출해 정답과 비교하므로 평가 전용 코드가 실행 동작을 바꾸지 않는다. `setup_data.py`가 다운로드를 담당하므로 파일을 준비한 후에는 분석을 오프라인으로 실행할 수 있다. 정규식이나 사전을 바꿀 때 CLI와 지표 집계 코드를 따로 수정할 필요가 없다.
+`main.py`는 명령줄 입력과 JSON 출력만 맡고, `nlp/extract.py`와 `nlp/sentiment.py`는 문자열을 받아 결과를 반환한다. 그래서 다른 프로그램이 CLI를 거치지 않고 각 함수를 가져다 쓸 수 있고, 회귀 테스트도 정규화와 감성 규칙을 따로 검증할 수 있다. `evaluate.py`는 같은 함수를 호출해 정답과 비교하므로 평가 전용 코드가 실행 동작을 바꾸지 않는다. `setup_data.py`가 다운로드를 담당하므로 파일을 준비한 후에는 분석을 오프라인으로 실행할 수 있다. 정규식이나 사전을 바꿀 때 CLI와 지표 집계 코드를 따로 수정할 필요가 없다.
 
 | 파일 | 역할 |
 | --- | --- |
 | `main.py` | 정보 추출과 감성 분석을 함께 실행하는 CLI |
-| `extract.py` | Python `re`로 탐지하고 결과 정규화 |
-| `sentiment.py` | 한국어 어절 토큰화, 감성 점수 계산, 부정·강조 처리 |
+| `nlp/extract.py` | Python `re`로 탐지하고 결과 정규화 |
+| `nlp/sentiment.py` | 한국어 어절 토큰화, 감성 점수 계산, 부정·강조 처리 |
 | `evaluate.py` | 정밀도, 재현율, 정확도, F1 및 실패 사례 출력 |
 | `data/extraction.jsonl` | 직접 작성한 문장 60개. 유형별 12문장과 정규화된 정답 |
 | `setup_data.py` | 공식 KNU 사전과 NSMC 테스트셋을 내려받고 SHA-256 확인 |
@@ -124,7 +125,7 @@ python -X utf8 evaluate.py
 
 새 유형으로 접수 번호를 추가한다면 다음 순서로 작업한다.
 
-1. `extract.py`에 `TICKET = re.compile(r"(?<![A-Za-z0-9])(?P<prefix>[A-Za-z]{3})-(?P<number>[0-9]{5})(?![0-9])")`을 추가하고 `PATTERNS["ticket"] = TICKET`으로 등록한다.
+1. `nlp/extract.py`에 `TICKET = re.compile(r"(?<![A-Za-z0-9])(?P<prefix>[A-Za-z]{3})-(?P<number>[0-9]{5})(?![0-9])")`을 추가하고 `PATTERNS["ticket"] = TICKET`으로 등록한다.
 2. `normalize`의 URL 처리 앞에서 `ticket` 분기를 만들고 `prefix`를 대문자로 바꾼 뒤 `number`와 결합한다. `extract`의 우선순위 순회에 `ticket`을 추가한다. URL 경로에도 접수 번호가 들어갈 수 있으므로 URL보다 뒤에 둔다.
 3. 기존 평가 행의 `expected`에 `"ticket": []`를 추가하고 새 유형의 정답 행과 회귀 테스트를 넣는다. 정상 표기, 허용하지 않는 자릿수, URL 내부 중복을 각각 검증한다.
 

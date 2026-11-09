@@ -99,7 +99,7 @@ def normalize(kind, match):
 
 
 def extract(text):
-    """항목별로 정규화된 결과를 등장 순서대로 반환한다."""
+    """유형별로 정규화된 결과를 등장 순서대로 반환한다."""
     found = {kind: [] for kind in PATTERNS}
     occupied = []
     # URL 및 이메일 내부 문자열을 전화·금액·날짜로 중복 집계하지 않는다.

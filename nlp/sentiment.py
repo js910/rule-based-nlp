@@ -34,7 +34,7 @@ INTENSIFIERS = {"매우": 1.5, "정말": 1.5, "아주": 1.5, "너무": 1.5,
 
 
 def load_lexicon():
-    data = Path(__file__).parent / "data"
+    data = Path(__file__).resolve().parents[1] / "data"
     path = data / "SentiWord_info.json"
     if not path.exists():
         raise SystemExit("KNU 감성사전이 필요합니다. 먼저 python setup_data.py를 실행하세요.")

@@ -7,8 +7,8 @@ import sys
 import unittest
 
 from evaluate import evaluate_extraction, evaluate_sentiment, read_data
-from extract import extract
-from sentiment import analyze
+from nlp.extract import extract
+from nlp.sentiment import analyze
 
 ROOT = Path(__file__).resolve().parents[1]
 
