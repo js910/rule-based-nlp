@@ -1,12 +1,15 @@
 """정보 추출·감성 분석·평가의 핵심 동작을 검증한다."""
 
 import json
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 import subprocess
 import sys
 import unittest
+from unittest.mock import patch
 
-from evaluate import evaluate_extraction, evaluate_sentiment, read_data
+from evaluate import evaluate_extraction, evaluate_sentiment, main as evaluate_main, read_data
 from nlp.extract import extract
 from nlp.sentiment import analyze
 
@@ -25,6 +28,10 @@ class ExtractionTests(unittest.TestCase):
                 ("(02) 123-4567", "02-123-4567"),
                 ("031 1234 5678", "031-1234-5678"),
                 ("01012345678", "010-1234-5678"),
+                ("+82 10-1234-5678", "010-1234-5678"),
+                ("+82-2-123-4567", "02-123-4567"),
+                ("공일공-일이삼사-오육칠팔입니다", "010-1234-5678"),
+                ("영이-일이삼-사오육칠", "02-123-4567"),
             ],
             "date": [
                 ("2024년 2월 29일", "2024-02-29"),
@@ -48,16 +55,21 @@ class ExtractionTests(unittest.TestCase):
                     self.assertEqual(extract(raw)[kind], [expected])
 
     def test_invalid_and_overlapping_matches(self):
-        result = extract("2023-02-29 2024/12-31 10,00원 https://example.com/2024-01-01")
+        result = extract(
+            "2023-02-29 2024/12-31 10,00원 https://example.com/2024-01-01 "
+            "공일공-일이삼사-오육칠"
+        )
         self.assertEqual(result["date"], [])
         self.assertEqual(result["money"], [])
+        self.assertEqual(result["phone"], [])
         self.assertEqual(result["url"], ["https://example.com/2024-01-01"])
 
     def test_extraction_evaluation_fixture(self):
         counts, failures = evaluate_extraction(read_data("extraction.jsonl"))
         self.assertEqual(dict(counts["email"]), {"tp": 10, "fp": 0, "fn": 2})
+        self.assertEqual(dict(counts["phone"]), {"tp": 10, "fp": 0, "fn": 1})
         self.assertEqual(dict(counts["url"]), {"tp": 9, "fp": 1, "fn": 2})
-        self.assertEqual(len(failures), 10)
+        self.assertEqual(len(failures), 9)
 
 
 class SentimentTests(unittest.TestCase):
@@ -66,6 +78,7 @@ class SentimentTests(unittest.TestCase):
             ("안 좋다", -2, 1, 1),
             ("좋지 않다", -2, 1, 1),
             ("좋지 않지 않다", 2, 2, 1),
+            ("좋지는 않지는 않아요", 2, 2, 1),
             ("정말 안 좋다", -3, 1, 1.5),
             ("완전 정말 좋다", 3, 0, 1.5),
             ("조금 좋다", 1, 0, 0.5),
@@ -105,3 +118,13 @@ class CLITests(unittest.TestCase):
         self.assertEqual(result["information"]["phone"], ["02-123-4567"])
         self.assertEqual(result["sentiment"]["label"], "부정")
         self.assertEqual(result["sentiment"]["score"], -3)
+
+    def test_full_evaluation_reports_both_settings(self):
+        output = StringIO()
+        with patch.object(sys, "argv", ["evaluate.py", "--errors", "0"]), redirect_stdout(output):
+            evaluate_main()
+        report = output.getvalue()
+        self.assertIn("정보 추출 평가 (60문장)", report)
+        self.assertIn("NSMC 감성 분석 평가 (49997문장", report)
+        self.assertIn("| 사전만 |", report)
+        self.assertIn("| 사전 + 규칙 |", report)

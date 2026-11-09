@@ -19,7 +19,7 @@
 {"id":"E19","focus":"phone","text":"부산 (051) 123-4567 또는 010-1234-0000","expected":{"email":[],"phone":["051-123-4567","010-1234-0000"],"date":[],"money":[],"url":[]}}
 {"id":"E20","focus":"phone","text":"번호: 010-1234","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
 {"id":"E21","focus":"phone","text":"고객 번호는 202611090000입니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
-{"id":"E22","focus":"phone","text":"번호는 공일공-일이삼사-오육칠팔입니다.","expected":{"email":[],"phone":["010-1234-5678"],"date":[],"money":[],"url":[]},"note":"한글로 풀어 쓴 숫자는 아라비아 숫자 범위에 포함되지 않는다."}
+{"id":"E22","focus":"phone","text":"번호는 공일공-일이삼사-오육칠팔입니다.","expected":{"email":[],"phone":["010-1234-5678"],"date":[],"money":[],"url":[]}}
 {"id":"E23","focus":"phone","text":"대표번호는 1588-1234입니다.","expected":{"email":[],"phone":["1588-1234"],"date":[],"money":[],"url":[]},"note":"4자리 대표번호 형식이 지역번호·휴대폰 규칙에서 빠진다."}
 {"id":"E24","focus":"phone","text":"유선 번호 064 123 4567을 기록합니다.","expected":{"email":[],"phone":["064-123-4567"],"date":[],"money":[],"url":[]}}
 {"id":"E25","focus":"date","text":"신청 마감은 2024년 1월 15일입니다.","expected":{"email":[],"phone":[],"date":["2024-01-15"],"money":[],"url":[]}}

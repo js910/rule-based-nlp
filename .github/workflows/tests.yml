@@ -19,5 +19,24 @@ jobs:
           python-version: '3.10'
       - name: Prepare pinned evaluation data
         run: python setup_data.py
+      - name: Install coverage tool
+        run: python -m pip install coverage==7.10.7
       - name: Run regression tests
-        run: python -m unittest discover -s tests -v
+        run: python -m coverage run --branch --source=nlp,evaluate -m unittest discover -s tests -v
+      - name: Publish coverage report
+        run: |
+          python -m coverage report -m | tee coverage.txt
+          python -m coverage xml -o coverage.xml
+          {
+            echo '### Branch and statement coverage'
+            echo '~~~text'
+            cat coverage.txt
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: |
+            coverage.txt
+            coverage.xml
+          if-no-files-found: error

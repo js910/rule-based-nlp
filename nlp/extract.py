@@ -14,10 +14,16 @@ EMAIL = re.compile(
 )
 
 # 휴대폰, 서울, 세 자리 지역번호. 하이픈·공백·괄호와 붙여 쓰기를 허용한다.
-# 예: 010-1234-5678, (02) 123-4567, 031 1234 5678
+# 한국 국가번호 +82와 하이픈으로 나뉜 한글 숫자 표기도 지원한다.
+# 예: (02) 123-4567, +82 10-1234-5678, 공일공-일이삼사-오육칠팔
+KOREAN_DIGITS = "공영일이삼사오육칠팔구"
+PHONE_DIGITS = str.maketrans(KOREAN_DIGITS, "00123456789")
 PHONE = re.compile(
-    r"(?<![0-9])(?:\((?P<bracket>02|0[13-6][0-9])\)|(?P<area>02|0[13-6][0-9]))"
+    r"(?<![0-9])(?:(?:\+82[ -]?(?P<international_area>2|[13-6][0-9])"
+    r"|\((?P<bracket>02|0[13-6][0-9])\)|(?P<area>02|0[13-6][0-9]))"
     r"[ -]?(?P<middle>[0-9]{3,4})[ -]?(?P<last>[0-9]{4})(?![0-9])"
+    rf"|(?<![{KOREAN_DIGITS}0-9])(?P<spoken>[공영](?:이|[일삼사오육][{KOREAN_DIGITS}])"
+    rf"-[{KOREAN_DIGITS}]{{3,4}}-[{KOREAN_DIGITS}]{{4}})(?![{KOREAN_DIGITS}0-9]))"
 )
 
 # 한국어 날짜와 연·월·일 순서의 숫자 날짜를 찾는다. 구분자는 역참조로 통일한다.
@@ -77,7 +83,11 @@ def normalize(kind, match):
     if kind == "email":
         return f"{match['local']}@{match['domain'].lower()}"
     if kind == "phone":
-        return "-".join((match["bracket"] or match["area"], match["middle"], match["last"]))
+        if match["spoken"]:
+            return match["spoken"].translate(PHONE_DIGITS)
+        area = "0" + match["international_area"] if match["international_area"] else (
+            match["bracket"] or match["area"])
+        return "-".join((area, match["middle"], match["last"]))
     if kind == "date":
         return date(int(match["year"]), int(match["km"] or match["nm"]),
                     int(match["kd"] or match["nd"])).isoformat()
