@@ -1,0 +1,60 @@
+{"id":"E01","focus":"email","text":"문의는 help@example.com입니다.","expected":{"email":["help@example.com"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E02","focus":"email","text":"메일 Test.User@SUB.Example.co.kr로 보내 주세요.","expected":{"email":["Test.User@sub.example.co.kr"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E03","focus":"email","text":"회신: service+orders@example.org","expected":{"email":["service+orders@example.org"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E04","focus":"email","text":"담당자는 ops_team@team.example.net입니다.","expected":{"email":["ops_team@team.example.net"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E05","focus":"email","text":"이전 주소 old@demo.example.com, 새 주소 new@example.net","expected":{"email":["old@demo.example.com","new@example.net"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E06","focus":"email","text":"<info@domain-test.co.kr>","expected":{"email":["info@domain-test.co.kr"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E07","focus":"email","text":"abc123@box.example.com을 등록했어요.","expected":{"email":["abc123@box.example.com"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E08","focus":"email","text":"이메일: info@localhost","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E09","focus":"email","text":"로그인 아이디: help.example.com","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E10","focus":"email","text":"메일 주소는 고객센터@도메인.한국입니다.","expected":{"email":["고객센터@도메인.한국"],"phone":[],"date":[],"money":[],"url":[]},"note":"국제화 주소의 한글 로컬 파트와 도메인을 ASCII 규칙으로 찾지 못한다."}
+{"id":"E11","focus":"email","text":"안내: shop [at] example [dot] org","expected":{"email":["shop@example.org"],"phone":[],"date":[],"money":[],"url":[]},"note":"스팸 방지용 치환 표기는 @와 점을 요구하는 규칙에서 빠진다."}
+{"id":"E12","focus":"email","text":"관리자: a-b@test.co.kr.","expected":{"email":["a-b@test.co.kr"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E13","focus":"phone","text":"연락처는 010-1234-5678입니다.","expected":{"email":[],"phone":["010-1234-5678"],"date":[],"money":[],"url":[]}}
+{"id":"E14","focus":"phone","text":"서울 사무실 02-123-4567","expected":{"email":[],"phone":["02-123-4567"],"date":[],"money":[],"url":[]}}
+{"id":"E15","focus":"phone","text":"경기 지사 031-1234-5678","expected":{"email":[],"phone":["031-1234-5678"],"date":[],"money":[],"url":[]}}
+{"id":"E16","focus":"phone","text":"담당 번호 (02) 3456-7890","expected":{"email":[],"phone":["02-3456-7890"],"date":[],"money":[],"url":[]}}
+{"id":"E17","focus":"phone","text":"연락처: 010 4321 8765","expected":{"email":[],"phone":["010-4321-8765"],"date":[],"money":[],"url":[]}}
+{"id":"E18","focus":"phone","text":"번호 01055557777로 전화하세요.","expected":{"email":[],"phone":["010-5555-7777"],"date":[],"money":[],"url":[]}}
+{"id":"E19","focus":"phone","text":"부산 (051) 123-4567 또는 010-1234-0000","expected":{"email":[],"phone":["051-123-4567","010-1234-0000"],"date":[],"money":[],"url":[]}}
+{"id":"E20","focus":"phone","text":"번호: 010-1234","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E21","focus":"phone","text":"고객 번호는 202611090000입니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E22","focus":"phone","text":"번호는 공일공-일이삼사-오육칠팔입니다.","expected":{"email":[],"phone":["010-1234-5678"],"date":[],"money":[],"url":[]},"note":"한글로 풀어 쓴 숫자는 아라비아 숫자 범위에 포함되지 않는다."}
+{"id":"E23","focus":"phone","text":"대표번호는 1588-1234입니다.","expected":{"email":[],"phone":["1588-1234"],"date":[],"money":[],"url":[]},"note":"4자리 대표번호 형식이 지역번호·휴대폰 규칙에서 빠진다."}
+{"id":"E24","focus":"phone","text":"유선 번호 064 123 4567을 기록합니다.","expected":{"email":[],"phone":["064-123-4567"],"date":[],"money":[],"url":[]}}
+{"id":"E25","focus":"date","text":"신청 마감은 2024년 1월 15일입니다.","expected":{"email":[],"phone":[],"date":["2024-01-15"],"money":[],"url":[]}}
+{"id":"E26","focus":"date","text":"발표: 2024/01/15","expected":{"email":[],"phone":[],"date":["2024-01-15"],"money":[],"url":[]}}
+{"id":"E27","focus":"date","text":"접수일 2024-01-15","expected":{"email":[],"phone":[],"date":["2024-01-15"],"money":[],"url":[]}}
+{"id":"E28","focus":"date","text":"회의는 2024.2.9에 열립니다.","expected":{"email":[],"phone":[],"date":["2024-02-09"],"money":[],"url":[]}}
+{"id":"E29","focus":"date","text":"윤일 2024-02-29에 만나요.","expected":{"email":[],"phone":[],"date":["2024-02-29"],"money":[],"url":[]}}
+{"id":"E30","focus":"date","text":"기간은 2025년 12월 31일부터 2026/1/1까지.","expected":{"email":[],"phone":[],"date":["2025-12-31","2026-01-01"],"money":[],"url":[]}}
+{"id":"E31","focus":"date","text":"안내 날짜 2026-9-3입니다.","expected":{"email":[],"phone":[],"date":["2026-09-03"],"money":[],"url":[]}}
+{"id":"E32","focus":"date","text":"시스템 기록에 2023-02-29가 입력됐습니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E33","focus":"date","text":"입력값이 2024-12/31입니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E34","focus":"date","text":"배송일은 20241109입니다.","expected":{"email":[],"phone":[],"date":["2024-11-09"],"money":[],"url":[]},"note":"구분자 없는 날짜는 다른 번호와 구별할 단서가 없어 현재 패턴에서 제외했다."}
+{"id":"E35","focus":"date","text":"행사는 11/9/2026에 열려요.","expected":{"email":[],"phone":[],"date":["2026-11-09"],"money":[],"url":[]},"note":"월/일/연 순서가 연도 우선 규칙에 포함되지 않는다."}
+{"id":"E36","focus":"date","text":"예정일 2026년11월9일","expected":{"email":[],"phone":[],"date":["2026-11-09"],"money":[],"url":[]}}
+{"id":"E37","focus":"money","text":"가격은 10,000원입니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":10000,"currency":"KRW"}],"url":[]}}
+{"id":"E38","focus":"money","text":"총액 1억 2천만원 예정입니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":120000000,"currency":"KRW"}],"url":[]}}
+{"id":"E39","focus":"money","text":"해외 가격은 $100입니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":100,"currency":"USD"}],"url":[]}}
+{"id":"E40","focus":"money","text":"결제금액 ₩ 2,500","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":2500,"currency":"KRW"}],"url":[]}}
+{"id":"E41","focus":"money","text":"보상액 3억5천2백만원입니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":352000000,"currency":"KRW"}],"url":[]}}
+{"id":"E42","focus":"money","text":"소액 5천 원과 9,900원","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":5000,"currency":"KRW"},{"amount":9900,"currency":"KRW"}],"url":[]}}
+{"id":"E43","focus":"money","text":"단가: $1,200","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":1200,"currency":"USD"}],"url":[]}}
+{"id":"E44","focus":"money","text":"이 상품은 200개 남았습니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E45","focus":"money","text":"표시값 10,00원은 오류입니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E46","focus":"money","text":"비용은 USD 250입니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":250,"currency":"USD"}],"url":[]},"note":"숫자 앞에 통화 코드를 적는 표기는 $ 또는 ₩ 기호를 요구하는 규칙에서 빠진다."}
+{"id":"E47","focus":"money","text":"유럽 가격은 €500입니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":500,"currency":"EUR"}],"url":[]},"note":"유로 기호와 통화 코드가 원화·달러 규칙에 포함되지 않는다."}
+{"id":"E48","focus":"money","text":"지원액 1조 2억원이 배정됐습니다.","expected":{"email":[],"phone":[],"date":[],"money":[{"amount":1000200000000,"currency":"KRW"}],"url":[]}}
+{"id":"E49","focus":"url","text":"링크: <https://www.example.com/path?q=1>","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["https://www.example.com/path?q=1"]}}
+{"id":"E50","focus":"url","text":"이전 주소 http://EXAMPLE.com/page","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["http://example.com/page"]}}
+{"id":"E51","focus":"url","text":"접속: www.example.net/notice.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["https://www.example.net/notice"]}}
+{"id":"E52","focus":"url","text":"자세한 내용은 (https://example.com:8443/#news)","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["https://example.com:8443/#news"]}}
+{"id":"E53","focus":"url","text":"주소 https://docs.example.org?lang=ko&v=2를 공유해요.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["https://docs.example.org?lang=ko&v=2"]}}
+{"id":"E54","focus":"url","text":"참조: http://example.org/%ED%95%9C%EA%B8%80","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["http://example.org/%ED%95%9C%EA%B8%80"]}}
+{"id":"E55","focus":"url","text":"두 주소 http://example.com 및 www.example.org","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["http://example.com","https://www.example.org"]}}
+{"id":"E56","focus":"url","text":"계정 id@www.example.com을 등록하세요.","expected":{"email":["id@www.example.com"],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E57","focus":"url","text":"표시 문구 http://만 입력됐습니다.","expected":{"email":[],"phone":[],"date":[],"money":[],"url":[]}}
+{"id":"E58","focus":"url","text":"파일 서버 ftp://files.example.com/pub","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["ftp://files.example.com/pub"]},"note":"HTTP 계열 링크만 지원하여 FTP 주소를 놓친다."}
+{"id":"E59","focus":"url","text":"주소 https://example.com/한글","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["https://example.com/한글"]},"note":"ASCII 경로까지만 잡아 한글 경로가 잘린다."}
+{"id":"E60","focus":"url","text":"링크: https://example.com/a(b).","expected":{"email":[],"phone":[],"date":[],"money":[],"url":["https://example.com/a(b)"]}}
