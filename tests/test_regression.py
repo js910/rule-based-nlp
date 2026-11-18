@@ -112,7 +112,7 @@ class CLITests(unittest.TestCase):
     def test_combined_json_output(self):
         text = "정말 좋지 않다. 전화 (02) 123-4567, 접수 2024년 3월 15일, 비용 5,000원"
         process = subprocess.run(
-            [sys.executable, "-X", "utf8", "main.py", "--text", text],
+            [sys.executable, "-X", "utf8", "main.py", "--text", text, "--format", "json"],
             cwd=ROOT, check=True, capture_output=True, encoding="utf-8",
         )
         result = json.loads(process.stdout)
@@ -129,6 +129,29 @@ class CLITests(unittest.TestCase):
         self.assertIs(type(result["information"]["money"][0]["amount"]), int)
         self.assertEqual(result["sentiment"]["label"], "부정")
         self.assertEqual(result["sentiment"]["score"], -3)
+
+    def test_readable_report_and_mode_options(self):
+        cases = [
+            ("정말 좋지 않다. 비용 5,000원", [],
+             ["- 금액: 5000 KRW", "'않다' → 감성 반전", "'정말' → 강도 ×1.5", "(-1) × 1.5 = -3", "최종 판정: 부정"]),
+            ("정말 좋지 않다", ["--baseline"],
+             ["사전만 (부정·강조 규칙 미적용)", "(+1) × 1 = +2", "최종 판정: 긍정"]),
+            ("좋지 않지 않다", [], ["'않지', '않다' → 원래 방향 유지 (2회)", "최종 점수: 2"]),
+            ("좋다. 나쁘다.", [], ["0점 사유: 긍정·부정 점수 상쇄", "최종 판정: 중립"]),
+            ("12345", [], ["감성 표현 미탐지", "최종 판정: 중립"]),
+            ("12345", ["--binary"], ["감성 표현 미탐지", "0점을 긍정으로 처리", "최종 판정: 긍정"]),
+            ("", [], ["토큰화: []", "최종 점수: 0"]),
+        ]
+        for text, options, expected in cases:
+            with self.subTest(text=text, options=options):
+                process = subprocess.run(
+                    [sys.executable, "-X", "utf8", "main.py", "--text", text, *options],
+                    cwd=ROOT, check=True, capture_output=True, encoding="utf-8",
+                )
+                self.assertIn("=== 정보 추출 결과 ===", process.stdout)
+                self.assertIn("=== 감성 분석 과정 ===", process.stdout)
+                for fragment in expected:
+                    self.assertIn(fragment, process.stdout)
 
     def test_full_evaluation_reports_both_settings(self):
         output = StringIO()

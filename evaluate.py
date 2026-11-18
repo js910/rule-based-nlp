@@ -83,7 +83,7 @@ def main():
     if args.errors < 0:
         parser.error("--errors는 0 이상이어야 합니다.")
     rows = read_data("extraction.jsonl")
-    counts, failures = evaluate_extraction(rows)
+    counts, extraction_failures = evaluate_extraction(rows)
     print(f"정보 추출 평가 ({len(rows)}문장)")
     print("| 유형 | TP | FP | FN | Precision | Recall |")
     print("| --- | ---: | ---: | ---: | ---: | ---: |")
@@ -91,12 +91,6 @@ def main():
         tp, fp, fn = count["tp"], count["fp"], count["fn"]
         print(f"| {kind} | {tp} | {fp} | {fn} | "
               f"{ratio(tp, tp + fp):.1%} | {ratio(tp, tp + fn):.1%} |")
-    print(f"\n추출 오류 {len(failures)}건")
-    for row, kind, expected, predicted in failures:
-        print(f"[{row['id']} {kind}] {row['text']} · 정답 {expected} · 출력 {predicted}")
-        if "note" in row:
-            print(f"  {row['note']}")
-
     rows = read_nsmc()
     labels = Counter(row["label"] for row in rows)
     print(f"\nNSMC 감성 분석 평가 ({len(rows)}문장, 긍정 {labels['긍정']}, 부정 {labels['부정']})")
@@ -108,11 +102,23 @@ def main():
         macro = sum(f1.values()) / len(LABELS)
         print(f"| {mode} | {len(rows) - len(failures)} | {accuracy:.1%} | "
               f"{f1['긍정']:.3f} | {f1['부정']:.3f} | {macro:.3f} |")
-    print(f"\n규칙 적용 후 오분류 {len(failures)}건")
-    for row, result in failures[:args.errors]:
+    print("\n=== 규칙 실패 사례 분석 ===")
+    print(f"\n[정보 추출 실패] {len(extraction_failures)}건")
+    for row, kind, expected, predicted in extraction_failures:
+        print(f"\n[{row['id']} {kind}] 입력: {row['text']}")
+        print(f"정답: {expected} / 실제 출력: {predicted}")
+        if row.get("note"):
+            print(f"원인: {row['note']}")
+
+    shown = failures[:args.errors]
+    print(f"\n[감성 분석 실패] {len(failures)}건 중 {len(shown)}건 표시")
+    for row, result in shown:
         terms = ", ".join(f"{hit['term']}={hit['score']:+g}" for hit in result["hits"])
-        print(f"[{row['id']}] {row['text']} · 정답 {row['label']} · "
-              f"출력 {result['label']} ({terms or '매칭 없음'})")
+        print(f"\n[{row['id']}] 입력: {row['text']}")
+        print(f"정답: {row['label']} / 실제 출력: {result['label']}")
+        print(f"판정 근거: {terms or '매칭 없음'} (합계: {result['score']:g})")
+        if not result["hits"]:
+            print("원인: 사전에 일치하는 감성 표현을 찾지 못했습니다.")
 
 
 if __name__ == "__main__":

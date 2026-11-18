@@ -91,7 +91,7 @@ def lookup(token):
     return None
 
 
-def analyze(text, use_rules=True, zero_label="중립"):
+def analyze(text, use_rules=True, zero_label="중립", *, include_rule_terms=False):
     tokens = tuple(TOKEN.findall(text))
     hits = []
     next_index = 0
@@ -113,20 +113,24 @@ def analyze(text, use_rules=True, zero_label="중립"):
             next_index = index + 1
         before = tokens[index - 1] if index else ""
         after = tokens[next_index:next_index + 2]
-        negations = 0
+        negation_terms = []
         weight = 1.0
         if use_rules:
             if before in PRE_NEGATION:
-                negations += 1
+                negation_terms.append(before)
                 before = tokens[index - 2] if index >= 2 else ""
             if suffix in NEGATING_END and after and POST_NEGATION.fullmatch(after[0]):
-                negations += 1
+                negation_terms.append(after[0])
                 if after[0] in DOUBLE_FIRST and len(after) == 2 and POST_NEGATION.fullmatch(after[1]):
-                    negations += 1
+                    negation_terms.append(after[1])
             weight = INTENSIFIERS.get(before, 1.0)
+        negations = len(negation_terms)
         hits.append({"token": " ".join(tokens[index:next_index]), "term": stem, "base": base,
                      "negations": negations, "weight": weight,
                      "score": base * (-1) ** negations * weight})
+        if include_rule_terms:
+            hits[-1]["negation_terms"] = negation_terms
+            hits[-1]["intensifier"] = before if weight != 1 else None
 
     score = sum(hit["score"] for hit in hits)
     label = "긍정" if score > 0 else "부정" if score < 0 else zero_label
