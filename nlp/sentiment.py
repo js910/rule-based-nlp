@@ -34,6 +34,7 @@ INTENSIFIERS = {"매우": 1.5, "정말": 1.5, "아주": 1.5, "너무": 1.5,
 
 
 def load_lexicon():
+    # KNU 사전과 도메인 사전 결합. 단어·어근 점수표와 구절 점수표 반환
     data = Path(__file__).resolve().parents[1] / "data"
     path = data / "SentiWord_info.json"
     if not path.exists():
@@ -58,12 +59,14 @@ def load_lexicon():
             continue
         words[word] = score
         if root and word.startswith(root) and SUFFIX.fullmatch(word[len(root):]):
+            # 이미 등록한 어근 점수 유지
             roots.setdefault(root, score)
     roots.update(words)
     with (data / "domain_lexicon.csv").open(encoding="utf-8", newline="") as source:
         for row in csv.DictReader(source):
             term = row["term"]
             target = phrases if " " in term else roots
+            # 같은 키의 기존 점수를 CSV 점수로 교체
             target[term] = int(row["score"])
     return roots, phrases
 
@@ -79,6 +82,7 @@ for candidates in PHRASES_BY_START.values():
 
 
 def lookup(token):
+    # 토큰에서 사전 표현과 어미·조사 분리. 일치 항목 없으면 None 반환
     if token in INTENSIFIERS or token in PRE_NEGATION or POST_NEGATION.fullmatch(token):
         return None
     for length in range(min(len(token), MAX_TERM_LENGTH), 0, -1):
@@ -92,6 +96,7 @@ def lookup(token):
 
 
 def analyze(text, use_rules=True, zero_label="중립", *, include_rule_terms=False):
+    # 부정·강조를 반영한 문장 점수, 판정, 표현별 근거 반환
     tokens = tuple(TOKEN.findall(text))
     hits = []
     next_index = 0
@@ -124,6 +129,7 @@ def analyze(text, use_rules=True, zero_label="중립", *, include_rule_terms=Fal
                 if after[0] in DOUBLE_FIRST and len(after) == 2 and POST_NEGATION.fullmatch(after[1]):
                     negation_terms.append(after[1])
             weight = INTENSIFIERS.get(before, 1.0)
+        # 부정이 홀수 번이면 부호 반전, 짝수 번이면 부호 유지
         negations = len(negation_terms)
         hits.append({"token": " ".join(tokens[index:next_index]), "term": stem, "base": base,
                      "negations": negations, "weight": weight,

@@ -5,7 +5,6 @@ from datetime import date
 from urllib.parse import urlsplit, urlunsplit
 
 # 로컬 파트의 점·플러스 태그와 여러 단계의 도메인을 허용한다.
-# 예: user@example.com, user.name@sub.example.com, user+tag@example.org
 EMAIL = re.compile(
     r"(?<![\w.+@-])(?P<local>[a-z0-9_%+-]+(?:\.[a-z0-9_%+-]+)*)"
     r"@(?P<domain>(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,})"
@@ -15,9 +14,9 @@ EMAIL = re.compile(
 
 # 휴대폰, 서울, 세 자리 지역번호. 하이픈·공백·괄호와 붙여 쓰기를 허용한다.
 # 한국 국가번호 +82와 하이픈으로 나뉜 한글 숫자 표기도 지원한다.
-# 예: (02) 123-4567, +82 10-1234-5678, 공일공-일이삼사-오육칠팔
 KOREAN_DIGITS = "공영일이삼사오육칠팔구"
 PHONE_DIGITS = str.maketrans(KOREAN_DIGITS, "00123456789")
+# [13-6]은 1 또는 3~6 한 자리. 앞번호는 +82·괄호·일반 표기로 구분
 PHONE = re.compile(
     r"(?<![0-9])(?:(?:\+82[ -]?(?P<international_area>2|[13-6][0-9])"
     r"|\((?P<bracket>02|0[13-6][0-9])\)|(?P<area>02|0[13-6][0-9]))"
@@ -27,7 +26,7 @@ PHONE = re.compile(
 )
 
 # 한국어 날짜와 연·월·일 순서의 숫자 날짜를 찾는다. 구분자는 역참조로 통일한다.
-# 예: 2024년 2월 29일, 2024/02/29, 2024-02-29. 2024/02-29는 제외한다.
+# sep에 첫 구분자 저장, (?P=sep)로 두 번째 구분자 일치 확인
 DATE = re.compile(
     r"(?<![0-9])(?P<year>[0-9]{4})"
     r"(?:년\s*(?P<km>[0-9]{1,2})월\s*(?P<kd>[0-9]{1,2})일"
@@ -38,7 +37,6 @@ DATE = re.compile(
 # 숫자 묶음은 쉼표가 있으면 세 자리 단위만 허용한다.
 NUMBER = r"(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)"
 # 통화 기호나 원화 단위를 통해 일반 숫자와 금액을 구별한다.
-# 예: 10,000원, 1억 2천만원, $100
 MONEY = re.compile(
     rf"(?<![0-9.,])(?:(?P<symbol>[$₩])\s*(?P<amount>{NUMBER})(?![0-9]|[.,][0-9])"
     rf"|(?P<won>(?:{NUMBER}[조억만천백십]\s*)*"
@@ -52,7 +50,6 @@ LARGE = {"만": 10_000, "억": 100_000_000, "조": 1_000_000_000_000}
 
 # http, https, www 시작 주소와 선택적인 포트, 경로, 쿼리, 프래그먼트를 찾는다.
 # URL의 경로는 ASCII 또는 퍼센트 인코딩 표기를 지원한다.
-# 예: http://example.com, https://example.com/a?q=1, www.example.com
 URL = re.compile(
     r"(?<![a-z0-9@._-])(?:(?:https?://)(?:www\.)?|www\.)"
     r"(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}"
@@ -93,6 +90,7 @@ def normalize(kind, match):
             match["bracket"] or match["area"])
         return "-".join((area, match["middle"], match["last"]))
     if kind == "date":
+        # km·kd는 한글 날짜, nm·nd는 숫자 날짜. date()에서 달력 검증
         return date(int(match["year"]), int(match["km"] or match["nm"]),
                     int(match["kd"] or match["nd"])).isoformat()
     if kind == "money":
@@ -123,6 +121,7 @@ def extract(text):
                 continue
             try:
                 found[kind].append(normalize(kind, match))
+            # 형식이 맞아도 변환할 수 없는 후보 제외
             except ValueError:
                 continue
             occupied.append(match.span())

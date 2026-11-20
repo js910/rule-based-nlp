@@ -14,11 +14,13 @@ LABELS = ("긍정", "부정")
 
 
 def read_data(filename):
+    # 추출 평가용 입력·정답 목록 로드
     with (DATA / filename).open(encoding="utf-8") as source:
         return [json.loads(line) for line in source if line.strip()]
 
 
 def read_nsmc():
+    # 빈 리뷰를 제외한 영화 리뷰와 정답 라벨 로드
     path = DATA / "ratings_test.txt"
     if not path.exists():
         raise SystemExit("NSMC 테스트 데이터가 필요합니다. 먼저 python setup_data.py를 실행하세요.")
@@ -31,14 +33,17 @@ def read_nsmc():
 
 
 def as_counter(values):
+    # 같은 값이 여러 번 나오면 그 횟수까지 포함해 비교
     return Counter(json.dumps(value, ensure_ascii=False, sort_keys=True) for value in values)
 
 
 def ratio(numerator, denominator):
+    # 첫 번째 값을 두 번째 값으로 나눠 비율 계산. 두 번째 값이 0이면 0.0 반환
     return numerator / denominator if denominator else 0.0
 
 
 def evaluate_extraction(rows):
+    # 유형별 TP·FP·FN과 실패 사례 집계
     counts = {kind: Counter() for kind in PATTERNS}
     failures = []
     for row in rows:
@@ -55,6 +60,7 @@ def evaluate_extraction(rows):
 
 
 def evaluate_sentiment(rows, use_rules, zero_label="중립"):
+    # 감성 판정 정확도·라벨별 F1·오분류 집계
     confusion = Counter()
     failures = []
     for row in rows:
@@ -76,6 +82,7 @@ def evaluate_sentiment(rows, use_rules, zero_label="중립"):
 
 
 def main():
+    # 명령줄 옵션에 따라 평가 실행 및 결과 출력
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--errors", type=int, default=20, help="출력할 감성 오분류 건수")
     parser.add_argument("--binary", action="store_true", help="0점을 긍정으로 판정해 이진 평가")
@@ -87,6 +94,7 @@ def main():
     print(f"정보 추출 평가 ({len(rows)}문장)")
     print("| 유형 | TP | FP | FN | Precision | Recall |")
     print("| --- | ---: | ---: | ---: | ---: | ---: |")
+    # 정밀도 = TP / (TP + FP), 재현율 = TP / (TP + FN)
     for kind, count in counts.items():
         tp, fp, fn = count["tp"], count["fp"], count["fn"]
         print(f"| {kind} | {tp} | {fp} | {fn} | "
@@ -110,6 +118,7 @@ def main():
         if row.get("note"):
             print(f"원인: {row['note']}")
 
+    # --errors는 표시할 감성 오분류 수만 제한
     shown = failures[:args.errors]
     print(f"\n[감성 분석 실패] {len(failures)}건 중 {len(shown)}건 표시")
     for row, result in shown:

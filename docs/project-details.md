@@ -26,7 +26,7 @@
 python -X utf8 main.py --text "좋지 않다"
 ```
 
-`nlp/sentiment.py`: [감성 표현별 점수 계산](../nlp/sentiment.py#L115)
+`nlp/sentiment.py`: [감성 표현별 점수 계산](../nlp/sentiment.py#L120)
 
 ### (3) 강조어가 점수에 반영되는지
 
@@ -36,7 +36,7 @@ python -X utf8 main.py --text "좋지 않다"
 python -X utf8 main.py --text "매우 좋다"
 ```
 
-`nlp/sentiment.py`: [감성 표현별 점수 계산](../nlp/sentiment.py#L115)
+`nlp/sentiment.py`: [감성 표현별 점수 계산](../nlp/sentiment.py#L120)
 
 ### (4) 추출 결과를 어떤 형식으로 반환하는지
 
@@ -46,7 +46,7 @@ python -X utf8 main.py --text "매우 좋다"
 python -X utf8 main.py --text "문의 a.b+tag@SUB.Example.com, 전화 +82 10-1234-5678, 날짜 2024/2/29, 비용 1억 2천만원, 링크 www.example.com/a?q=1"
 ```
 
-`nlp/extract.py`: [추출값을 표준 형식으로 변환](../nlp/extract.py#L82)
+`nlp/extract.py`: [추출값을 표준 형식으로 변환](../nlp/extract.py#L79)
 
 ### (5) 평가 지표와 실패 사례 확인
 
@@ -58,7 +58,7 @@ python -X utf8 evaluate.py --errors 30
 
 `README.md`: [평가 결과](../README.md#5-평가-결과), [성공·실패 사례](../README.md#6-성공실패-사례-분석)
 
-`evaluate.py`: [평가 실행 및 결과 출력](../evaluate.py#L78)
+`evaluate.py`: [평가 실행 및 결과 출력](../evaluate.py#L84)
 
 ### (6) 설치 및 실행 방법
 
@@ -76,8 +76,8 @@ python -X utf8 evaluate.py --errors 30
 
 **새 추출 유형 예시 · 접수번호**
 
-1. `nlp/extract.py`의 [`PATTERNS`에 접수번호 정규식 등록](../nlp/extract.py#L64). 예시 규칙은 영문 3자, 하이픈, 숫자 5자리.
-2. 같은 파일의 [`normalize()`에 대문자 변환 추가](../nlp/extract.py#L82). 같은 파일의 [`extract()`에서 URL보다 뒤에 접수번호 검색 순서 추가](../nlp/extract.py#L115).
+1. `nlp/extract.py`의 [`PATTERNS`에 접수번호 정규식 등록](../nlp/extract.py#L61). 예시 규칙은 영문 3자, 하이픈, 숫자 5자리.
+2. 같은 파일의 [`normalize()`에 대문자 변환 추가](../nlp/extract.py#L79). 같은 파일의 [`extract()`에서 URL보다 뒤에 접수번호 검색 순서 추가](../nlp/extract.py#L113).
 3. `tests/test_regression.py`에 아래 예시를 추가해 확인. 새 유형의 전체 평가에는 `data/extraction.jsonl`에 정답도 추가.
 
 | 테스트 입력 | 기대 결과 |
@@ -86,7 +86,7 @@ python -X utf8 evaluate.py --errors 30
 | `접수 번호 abc-1234` | 숫자가 네 자리라 제외 |
 | `https://example.com/abc-12345` | URL만 추출하고 접수번호로 다시 세지 않음 |
 
-**새 감성 표현 예시** · `data/domain_lexicon.csv`에 `재발송 지연,-2` 한 줄 추가. 기본 사전에 해당 표현이 이미 있으면 `nlp/sentiment.py`에서 [CSV 점수로 덮어쓴다](../nlp/sentiment.py#L61). 처음 보는 표현은 새 항목으로 추가한다.
+**새 감성 표현 예시** · `data/domain_lexicon.csv`에 `재발송 지연,-2` 한 줄 추가. 기본 사전에 해당 표현이 이미 있으면 `nlp/sentiment.py`에서 [CSV 점수로 덮어쓴다](../nlp/sentiment.py#L63). 처음 보는 표현은 새 항목으로 추가한다.
 
 ### (3) 날짜 정규식의 그룹과 수량자
 
@@ -128,7 +128,7 @@ python -X utf8 main.py --text "정말 좋지 않다"
 
 `nlp/extract.py`가 찾은 값을 `evaluate.py`에서 정답 파일과 비교한다. 맞게 찾은 값(TP), 잘못 찾은 값(FP), 놓친 값(FN)을 센 뒤 정밀도는 `TP / (TP + FP)`, 재현율은 `TP / (TP + FN)`으로 계산한다. `tests/test_regression.py`는 추출 결과와 이 집계값이 예상대로 나오는지 확인한다.
 
-`evaluate.py`: [추출 결과와 정답 비교](../evaluate.py#L41) · `README.md`: [유형별 평가표](../README.md#5-평가-결과)
+`evaluate.py`: [추출 결과와 정답 비교](../evaluate.py#L45) · `README.md`: [유형별 평가표](../README.md#5-평가-결과)
 
 ### (3) 이중부정을 어디까지 처리하는지
 
@@ -164,7 +164,7 @@ python -X utf8 main.py --text "영화가 재미없는 건 아니야"
 python -X utf8 evaluate.py --errors 30
 ```
 
-`evaluate.py`: [실패 사례 출력](../evaluate.py#L78) · `README.md`: [나머지 실패 사례](../README.md#6-성공실패-사례-분석)
+`evaluate.py`: [실패 사례 출력](../evaluate.py#L84) · `README.md`: [나머지 실패 사례](../README.md#6-성공실패-사례-분석)
 
 ### (2) 규칙 기반 시스템의 유지보수가 어려운 이유
 
@@ -199,7 +199,7 @@ python -X utf8 evaluate.py --errors 30
 테스트를 자동화하면 규칙을 수정할 때마다 기존에 잘 처리하던 입력이 여전히 예상대로 동작하는지 확인할 수 있다. `evaluate.py`로 변경 전후의 정밀도와 재현율, 실패 사례를 비교하면 새 규칙이 놓친 정답을 줄였는지, 새로 잘못 찾은 값은 없는지도 알 수 있다. 두 검사를 변경할 때마다 실행하면 회귀 문제를 일찍 발견하고 배포 전에 고칠 수 있다.
 
 `tests/test_regression.py`: [실제 결과와 정답 비교](../tests/test_regression.py#L57)
-`evaluate.py`: [평가 지표 계산](../evaluate.py#L41)
+`evaluate.py`: [평가 지표 계산](../evaluate.py#L45)
 `data/extraction.jsonl`: [평가 입력과 정답](../data/extraction.jsonl)
 
 ### (5) 복합·중립 감성을 단일 점수로 처리할 때의 설계
@@ -220,5 +220,5 @@ python -X utf8 main.py --text "음식은 맛있는데 가격이 너무하다"
 python -X utf8 main.py --text "매장은 2층에 있다"
 ```
 
-`nlp/sentiment.py`: [점수 합산과 라벨 결정](../nlp/sentiment.py#L135)
+`nlp/sentiment.py`: [점수 합산과 라벨 결정](../nlp/sentiment.py#L141)
 `main.py`: [계산 근거와 0점 이유 출력](../main.py#L10)
